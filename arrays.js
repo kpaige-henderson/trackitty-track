@@ -73,4 +73,4 @@ const updatedEmployeePrompt = [
             },
 ]
 
-module.exports = { start, addDepartmentPrompt, addRolePrompt, addEmployeePrompt, updatedEmployeePrompt}
+module.exports = { start, addDepartmentPrompt, addRolePrompt, addEmployeePrompt, updatedEmployeePrompt};

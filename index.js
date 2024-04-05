@@ -1,12 +1,13 @@
-const inquirer = require('inquirer');
-const mysql = require('mysql2');
-const { start, addDepartmentPrompt, addRolePrompt, addEmployeePrompt, updatedEmployeePrompt } = require('./arrays')
-const { inquirerPrompts } = require('/functions')
+const mysql = require ('mysql2');
+const inquirer = require ('inquirer');
+const { start, addDepartmentPrompt, addRolePrompt, addEmployeePrompt, updatedEmployeePrompt } = require ('./arrays');
+const runInquirer = require ('./functions');
+
 
 const db = mysql.createConnection(
 
     {
-        host: '127.0.0.1',
+        host: 'localhost',
         user: 'root',
         password: '',
         database: 'employees_db'
@@ -15,11 +16,12 @@ const db = mysql.createConnection(
 
 //main menu for application
 const init = () => {
-    inquirer.prompt(prompts)
-        .them(({ choice }) => {
+    inquirer.prompt(start)
+        .then(({ choice }) => {
+
             if (choice === 'View All Departments') {
 
-                viewDatabase("sELECT * FROM departments");
+                viewDatabase("SELECT * FROM departments");
 
             } else if (choice === 'Add Department') {
 
@@ -43,7 +45,7 @@ const init = () => {
 
             } else if (choice === 'Update Employee Role') {
 
-                updatedEmployee();
+                updateEmployee();
 
             } else if (choice === 'Exit') {
 
@@ -70,10 +72,10 @@ const viewDatabase = (query) => {
 };
 
 const addDepartment = () => {
-    runInquirer(addDepartmentPrompt, "INSERT INTRO department SET ?", "departmentName", "Department added", init);
+    runInquirer(addDepartmentPrompt, "INSERT INTO department SET ?", "departmentName", "Department added", init);
 };
 
-const addRole = () => {
+const addRoll = () => {
     db.query("SELECT id, name FROM department", function (err, results) {
         if (err) throw err;
 
@@ -94,7 +96,7 @@ const addRole = () => {
             db.query("INSERT INTO role SET ?", {
                 title: answers.roleTitle,
                 salary: answers.roleSalary,
-                department_id: answers.roleDepartmentQuestion
+                department_id: answers.roleDepartment
             }, function (err) {
                 if (err) throw err;
                 console.log("Role Added");
@@ -114,8 +116,8 @@ const addEmployee = () => {
 
         const employeeRoleQuestion = addEmployeePrompt.find(question => question.name === 'employeeRole');
 
-        if (roleDepartmentQuestion && roleDepartmentQuestion.type === 'list') {
-            roleDepartmentQuestion.choices = existingRoles;
+        if (employeeRoleQuestion && employeeRoleQuestion.type === 'list') {
+            employeeRoleQuestion.choices = existingRoles;
         } else {
             console.error("Error. Updating choices for employee role failed");
         };
@@ -131,7 +133,7 @@ const addEmployee = () => {
             const employeeManagerQuestion = addEmployeePrompt.find(question => question.name === 'employeeManager');
 
             if (employeeManagerQuestion && employeeManagerQuestion.type === 'list') {
-                employeeManagerQuestion.choices = existingEmployee;
+                employeeManagerQuestion.choices = existingEmployees;
             } else {
                 console.error("Error. Updating choices for manager failed");
             }
@@ -156,7 +158,7 @@ const addEmployee = () => {
 const updateEmployee = () => {
     db.query("SELECT id, first_name, last_name FROM employee", function (err, results) {
         if (err) throw err;
-        const existingEmployee = results.map(role => ({
+        const existingEmployees = results.map(employee => ({
             value: employee.id,
             name: `${employee.first_name} ${employee.last_name}`
         }));
@@ -189,8 +191,8 @@ const updateEmployee = () => {
                 console.log(answers);
                 db.query("UPDATE employee SET role_id = ? WHERE id = ?", 
                     [
-                        answers.updateEmployeeRole,
-                        answers.updatedEmployeeNames
+                        answers.updatedEmployeeRole,
+                        answers.updatedEmployeeQuestion
                     ], function(err) {
                         if (err) throw err;
                         console.log("Employee updated successfully!");

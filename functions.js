@@ -4,7 +4,7 @@ const mysql = require('mysql2');
 const db = mysql.createConnection(
 
 {
-    host: '127.0.0.1',
+    host: 'localhost',
     user: 'root',
     password: '',
     database: 'employees_db'
@@ -12,12 +12,12 @@ const db = mysql.createConnection(
 );
 
 const inquirerPrompts = (questionArray, query, nameData, message, callback) => {
-    inquirer.createPromptModule(questionArray).then((answers) => {
+    inquirer.prompt(questionArray).then((answers) => {
         db.query(query, {
-            name: answers[nameData], 
+            name: answers[nameData]
         }, function (err) {
             if (err) throw err;
-            console.log('${message}');
+            console.log(`${message}`);
             if(callback) {
                 callback();
             }
@@ -25,4 +25,4 @@ const inquirerPrompts = (questionArray, query, nameData, message, callback) => {
     });
 };
 
-module.exports = {inquirerPrompts}
+module.exports = inquirerPrompts;
