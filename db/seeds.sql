@@ -27,10 +27,10 @@ VALUES
 -- Insert employees
 INSERT INTO employee (id, first_name, last_name, role_id, manager_id)
 VALUES 
+    (4, "Deborah", "Chandlier", 4, NULL),
     (1, "Dan", "Rose", 1, 4),
     (2, "Norma", "Jean", 2, 4),
-    (3, "Jason", "Call", 3, 4),
-    (4, "Deborah", "Chandlier", 4, NULL),
+    (3, "Jason", "Call", 3, 4), 
     (5, "Jen", "Sanchez", 5, 4),
     (6, "Amy", "Mautz", 6, 4),
     (7, "Nicole", "Baird", 7, 4),
