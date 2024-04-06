@@ -17,46 +17,43 @@ const db = mysql.createConnection(
 //main menu for application
 const init = () => {
     inquirer.prompt(start)
-        .then(({ choice }) => {
-
-            if (choice === 'View All Departments') {
-
+    .then(({ choice }) => {
+        switch (choice) {
+            case 'View All Departments':
                 viewDatabase("SELECT * FROM departments");
-
-            } else if (choice === 'Add Department') {
-
+                break;
+            case 'Add Department':
                 addDepartment();
-
-            } else if (choice === 'View All Rolls') {
-
+                break;
+            case 'View All Roles':
                 viewDatabase("SELECT * FROM role");
-
-            } else if (choice === 'Add Role') {
-
-                addRoll();
-
-            } else if (choice === 'View All Employees') {
-
+                break;
+            case 'Add Role':
+                addRole();
+                break;
+            case 'View All Employees':
                 viewDatabase("SELECT * FROM employee");
-
-            } else if (choice === 'Add Employee') {
-
+                break;
+            case 'Add Employee':
                 addEmployee();
-
-            } else if (choice === 'Update Employee Role') {
-
+                break;
+            case 'Update Employee Role':
                 updateEmployee();
-
-            } else if (choice === 'Exit') {
-
-                console.log('Use Control + C to quit application and exit')
-            }
-        })
-        .catch((error) => {
-            console.log(error);
-            console.log('Try Again! Something went wrong.')
-        })
+                break;
+            case 'Exit':
+                console.log('Use Control + C to quit application and exit');
+                break;
+            default:
+                console.log('Invalid choice');
+        }
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+        console.log('Try Again! Something went wrong.');
+        init();
+    });
 };
+
 
 init();
 
