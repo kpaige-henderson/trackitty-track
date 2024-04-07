@@ -69,8 +69,18 @@ const viewDatabase = (query) => {
 };
 
 const addDepartment = () => {
-    runInquirer(addDepartmentPrompt, "INSERT INTO departments SET ?", "newDepartment", "Department added", init);
-};
+    inquirer.prompt(addDepartmentPrompt).then(answers => {
+        const newDepartment = answers.newDepartment;
+        db.query("INSERT INTO departments (name) VALUES (?)", [newDepartment], function (err, results) {
+            if (err) {
+                console.error('Error adding department:', err);
+                return;
+            }
+            console.log("Department Added");
+            init();
+        });
+    });
+}
 
 const addRoll = () => {
     db.query("SELECT id, name FROM departments", function (err, results) {
