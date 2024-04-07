@@ -26,13 +26,13 @@ const init = () => {
                 addDepartment();
                 break;
             case 'View All Roles':
-                viewDatabase("SELECT * FROM role");
+                viewDatabase("SELECT * FROM roles");
                 break;
             case 'Add Role':
-                addRole();
+                addRoll();
                 break;
             case 'View All Employees':
-                viewDatabase("SELECT * FROM employee");
+                viewDatabase("SELECT * FROM employees");
                 break;
             case 'Add Employee':
                 addEmployee();
@@ -69,31 +69,30 @@ const viewDatabase = (query) => {
 };
 
 const addDepartment = () => {
-    runInquirer(addDepartmentPrompt, "INSERT INTO department SET ?", "departmentName", "Department added", init);
+    runInquirer(addDepartmentPrompt, "INSERT INTO departments SET ?", "newDepartment", "Department added", init);
 };
 
 const addRoll = () => {
-    db.query("SELECT id, name FROM department", function (err, results) {
+    db.query("SELECT id, name FROM departments", function (err, results) {
         if (err) throw err;
 
         const existingDepartments = results.map(department => ({
             value: department.id,
             name: department.name
         }));
-
-        const roleDepartmentQuestion = addRolePrompt.find(question => question.name === 'roleDepartment');
-
-        if (roleDepartmentQuestion && roleDepartmentQuestion.type === 'list') {
-            roleDepartmentQuestion.choices = existingDepartments;
-        } else {
-            console.error("Error. Updating choices for role department failed");
-        };
-
-        inquirer.prompt(addRolePrompt).then((answers) => {
-            db.query("INSERT INTO role SET ?", {
-                title: answers.roleTitle,
+        const updatedAddRolePrompt = addRolePrompt.map(question => {
+            if (question.name === "roleDepartment") {
+                question.choices = existingDepartments.map(department => department.name);
+            }
+            return question
+        })
+        
+        inquirer.prompt(updatedAddRolePrompt).then((answers) => {
+            const chosenDepartment = existingDepartments.find(department => department.name === answers.roleDepartment);
+            db.query(`INSERT INTO roles SET ?`, {
+                title: answers.newRole,
                 salary: answers.roleSalary,
-                department_id: answers.roleDepartment
+                department_id: chosenDepartment.value
             }, function (err) {
                 if (err) throw err;
                 console.log("Role Added");
@@ -104,22 +103,22 @@ const addRoll = () => {
 };
 
 const addEmployee = () => {
-    db.query("SELECT id, title FROM role", function (err, results) {
+    db.query("SELECT id, title FROM roles", function (err, results) {
         if (err) throw err;
+
         const existingRoles = results.map(role => ({
             value: role.id,
             name: role.title
         }));
 
-        const employeeRoleQuestion = addEmployeePrompt.find(question => question.name === 'employeeRole');
+        let updatedAddEmployeePrompt = addEmployeePrompt.map(question => {
+            if (question.name === "employeeRole") {
+                question.choices = existingRoles.map(role => role.name);
+            }
+            return question
+        })
 
-        if (employeeRoleQuestion && employeeRoleQuestion.type === 'list') {
-            employeeRoleQuestion.choices = existingRoles;
-        } else {
-            console.error("Error. Updating choices for employee role failed");
-        };
-
-        db.query("SELECT id, first_name, last_name FROM employee", function (err, results) {
+        db.query("SELECT id, first_name, last_name FROM employees", function (err, results) {
             if (err) throw err;
 
             const existingEmployees = results.map(employee => ({
@@ -127,20 +126,21 @@ const addEmployee = () => {
                 name: `${employee.first_name} ${employee.last_name}`
             }));
 
-            const employeeManagerQuestion = addEmployeePrompt.find(question => question.name === 'employeeManager');
+            updatedAddEmployeePrompt = updatedAddEmployeePrompt.map(question => {
+                if (question.name === "employeeManager") {
+                    question.choices = existingEmployees.map(employee => employee.name);
+                }
+                return question
+            })
 
-            if (employeeManagerQuestion && employeeManagerQuestion.type === 'list') {
-                employeeManagerQuestion.choices = existingEmployees;
-            } else {
-                console.error("Error. Updating choices for manager failed");
-            }
-
-            inquirer.prompt(addEmployeePrompt).then((answers) => {
-                db.query("INSERT INTO employee SET ?", {
-                    first_name: answers.employeeFirst,
-                    last_name: answers.employeeLast,
-                    role_id: answers.employeeRole,
-                    manager_id: answers.employeeManager
+            inquirer.prompt(updatedAddEmployeePrompt).then((answers) => {
+                const chosenRole = existingRoles.find(role => role.name === answers.employeeRole);
+                const chosenManager = existingEmployees.find(employee => employee.name === answers.employeeManager);
+                db.query(`INSERT INTO employees SET ?`, {
+                    first_name: answers.employeeFirstName,
+                    last_name: answers.employeeLastName,
+                    role_id: chosenRole.value,
+                    manager_id: chosenManager ? chosenManager.value : null
                 }, function (err) {
                     if (err) throw err;
                     console.log("Employee added successfully!");
@@ -153,43 +153,42 @@ const addEmployee = () => {
 
 
 const updateEmployee = () => {
-    db.query("SELECT id, first_name, last_name FROM employee", function (err, results) {
+    db.query("SELECT id, first_name, last_name FROM employees", function (err, results) {
         if (err) throw err;
         const existingEmployees = results.map(employee => ({
             value: employee.id,
             name: `${employee.first_name} ${employee.last_name}`
         }));
+        console.log(results)
+        let employeeUpdate = updatedEmployeePrompt.map(question => {
+            if (question.name === "updatedEmployeeName") {
+                question.choices = existingEmployees.map(employee => employee.name);
+            }
+            return question
+        })
 
-        const updatedEmployeeQuestion = updatedEmployeePrompt.find(question => question.name === 'updatedEmployeeName');
-
-        if (updatedEmployeeQuestion && updatedEmployeeQuestion.type === 'list') {
-            updatedEmployeeQuestion.choices = existingEmployees;
-        } else {
-            console.error("Error. Can not display employees");
-        };
-
-        db.query("SELECT id, title FROM role", function (err, results) {
+        db.query("SELECT id, title FROM roles", function (err, results) {
             if (err) throw err;
             const existingRoles = results.map(role => ({
                 value: role.id,
                 name: role.title
             }));
 
+            employeeUpdate = employeeUpdate.map(question => {
+                if (question.name === "updatedEmployeeRole") {
+                    question.choices = existingRoles.map(role => role.name);
+                }
+                return question
+            })
 
-            const updatedRolesQuestion = updatedEmployeePrompt.find(question => question.name === 'updatedEmployeeRole');
-
-            if (updatedRolesQuestion && updatedRolesQuestion.type === 'list') {
-                updatedRolesQuestion.choices = existingRoles;
-            } else {
-                console.error("Error. Updating choices for employee role failed");
-            }
-
-            inquirer.prompt(updatedEmployeePrompt).then((answers) => {
-                console.log(answers);
-                db.query("UPDATE employee SET role_id = ? WHERE id = ?", 
+            inquirer.prompt(employeeUpdate).then((answers) => {
+                console.log(answers, existingEmployees)
+               const chosenEmployee = existingEmployees.find(employee => employee.name === answers.updatedEmployeeName);
+               const chosenRole = existingRoles.find(role => role.name === answers.updatedEmployeeRole);
+                db.query("UPDATE employees SET role_id = ? WHERE id = ?", 
                     [
-                        answers.updatedEmployeeRole,
-                        answers.updatedEmployeeQuestion
+                        chosenRole.value,
+                        chosenEmployee.value
                     ], function(err) {
                         if (err) throw err;
                         console.log("Employee updated successfully!");
@@ -199,23 +198,3 @@ const updateEmployee = () => {
         });
     });
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

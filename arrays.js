@@ -2,7 +2,7 @@ const start = [
     {
         type: 'list',
         message: "What would you like to do?",
-        choices: ['View All Departments', 'Add Department', 'View All Rolls', 'Add Role', 'View All Employees', 'Add Employee', 'Update Employee Role', 'Exit'],
+        choices: ['View All Departments', 'Add Department', 'View All Roles', 'Add Role', 'View All Employees', 'Add Employee', 'Update Employee Role', 'Exit'],
         name: 'choice',
     },
 ];
@@ -46,14 +46,15 @@ const addEmployeePrompt = [
         name: 'employeeLastName',
     },
     {
-        type: 'input',
+        type: 'list',
         message: 'What role will this employee have?',
+        choices: [],
         name: 'employeeRole',
     },
     {
-        type: 'input',
+        type: 'list',
         message: `Who will be the employee's manager?`,
-        choices: [],
+        choices: ['Deborah'],
         name: 'employeeManager',
     },
 ];

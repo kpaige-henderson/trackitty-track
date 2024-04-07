@@ -13,9 +13,7 @@ const db = mysql.createConnection(
 
 const inquirerPrompts = (questionArray, query, nameData, message, callback) => {
     inquirer.prompt(questionArray).then((answers) => {
-        db.query(query, {
-            name: answers[nameData]
-        }, function (err) {
+        db.query(query, answers[nameData], function (err) {
             if (err) throw err;
             console.log(`${message}`);
             if(callback) {
